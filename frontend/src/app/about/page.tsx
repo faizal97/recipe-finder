@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function About() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -144,12 +146,12 @@ export default function About() {
           Ready to discover your next favorite recipe? Start by adding some ingredients you have at home and let Recipe Finder do the rest.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <a href="/" className="bg-orange-500 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold text-center touch-manipulation">
+          <Link href="/" className="bg-orange-500 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold text-center touch-manipulation">
             Find Recipes Now
-          </a>
-          <a href="/recipes" className="border border-foreground/20 text-foreground px-6 sm:px-8 py-3 rounded-lg hover:bg-foreground/5 transition-colors font-semibold text-center touch-manipulation">
+          </Link>
+          <Link href="/recipes" className="border border-foreground/20 text-foreground px-6 sm:px-8 py-3 rounded-lg hover:bg-foreground/5 transition-colors font-semibold text-center touch-manipulation">
             View My Recipes
-          </a>
+          </Link>
         </div>
       </div>
     </div>

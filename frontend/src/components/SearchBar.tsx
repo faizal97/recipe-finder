@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { API_ENDPOINTS } from '@/utils/api'
 
 interface Recipe {
   id: string
@@ -44,11 +45,11 @@ export default function SearchBar({ className = "" }: SearchBarProps) {
 
     setLoading(true)
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/search/recipes?q=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`${API_ENDPOINTS.SEARCH_RECIPES}?q=${encodeURIComponent(searchQuery)}`)
 
       if (response.ok) {
         const data = await response.json()
-        setResults(data.recipes.map((recipe: any) => ({
+        setResults(data.recipes.map((recipe: Recipe) => ({
           id: recipe.id,
           title: recipe.title,
           imageUrl: recipe.imageUrl
@@ -150,7 +151,7 @@ export default function SearchBar({ className = "" }: SearchBarProps) {
             </div>
           ) : query.length >= 2 && !loading ? (
             <div className="py-4 px-4 text-center text-gray-500">
-              <p>No recipes found for "{query}"</p>
+              <p>No recipes found for &quot;{query}&quot;</p>
               <p className="text-sm mt-1">Try a different search term</p>
             </div>
           ) : null}

@@ -1,3 +1,5 @@
+'use client'
+
 import { WifiOff, RefreshCw, Home } from 'lucide-react'
 import Link from 'next/link'
 
@@ -11,10 +13,10 @@ export default function OfflinePage() {
               <WifiOff className="h-8 w-8 text-gray-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              You're Offline
+              You&apos;re Offline
             </h1>
             <p className="text-gray-600">
-              It looks like you've lost your internet connection. Don't worry, you can still browse your saved recipes!
+              It looks like you&apos;ve lost your internet connection. Don&apos;t worry, you can still browse your saved recipes!
             </p>
           </div>
 
@@ -45,7 +47,7 @@ export default function OfflinePage() {
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Your saved recipes are available offline and will sync when you're back online.
+              Your saved recipes are available offline and will sync when you&apos;re back online.
             </p>
           </div>
         </div>

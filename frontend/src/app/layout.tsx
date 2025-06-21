@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   title: "RecipeFinder",
   description: "Discover and share amazing recipes",
   manifest: "/manifest.json",
-  themeColor: "#ea580c",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -40,6 +39,12 @@ export const metadata: Metadata = {
     title: "RecipeFinder - Find Perfect Recipes",
     description: "Discover and share amazing recipes",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f97316",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

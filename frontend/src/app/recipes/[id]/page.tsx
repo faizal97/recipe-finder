@@ -16,6 +16,7 @@ import {
   Shield
 } from 'lucide-react'
 import { saveRecipe, unsaveRecipe, isRecipeSaved } from '@/utils/savedRecipes'
+import { API_ENDPOINTS } from '@/utils/api'
 
 interface DetailedIngredient {
   id: number
@@ -88,7 +89,7 @@ export default function RecipeDetailPage() {
   const fetchRecipeDetails = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`http://localhost:8080/api/v1/recipes/${recipeId}`)
+      const response = await fetch(`${API_ENDPOINTS.RECIPE_DETAILS}/${recipeId}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch recipe details')

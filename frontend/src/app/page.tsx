@@ -1,11 +1,10 @@
 'use client'
 
-import Link from 'next/link'
-import { Plus, Search, X, ChevronDown } from 'lucide-react'
-import IngredientInput from '@/components/IngredientInput'
+import { Plus, X } from 'lucide-react'
 import RecipeCard from '@/components/RecipeCard'
 import { Recipe } from '@/types/recipe'
 import { useState, useEffect, useRef } from 'react'
+import { API_ENDPOINTS } from '@/utils/api'
 
 interface Ingredient {
   id: number
@@ -45,7 +44,7 @@ export default function Home() {
     setShowDropdown(true) // Show dropdown immediately to show loading state
     
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/ingredients/search?q=${encodeURIComponent(query)}`)
+      const response = await fetch(`${API_ENDPOINTS.SEARCH_INGREDIENTS}?q=${encodeURIComponent(query)}`)
       if (response.ok) {
         const data = await response.json()
         setSearchResults(data.ingredients || [])
@@ -113,7 +112,7 @@ export default function Home() {
     console.log('Loading all recipes...')
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8080/api/recipes', {
+      const response = await fetch(API_ENDPOINTS.RECIPES, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +144,7 @@ export default function Home() {
 
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8080/api/recipes', {
+      const response = await fetch(API_ENDPOINTS.RECIPES, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

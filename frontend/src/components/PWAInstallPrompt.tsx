@@ -25,7 +25,7 @@ export default function PWAInstallPrompt() {
 
     // Check if app is already installed (standalone mode)
     const standalone = window.matchMedia('(display-mode: standalone)').matches || 
-                      (window.navigator as any).standalone ||
+                      (window.navigator as unknown as { standalone?: boolean }).standalone ||
                       document.referrer.includes('android-app://')
     setIsStandalone(standalone)
 
@@ -131,8 +131,8 @@ export default function PWAInstallPrompt() {
               </p>
               <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
                 <li>Tap the Share button in Safari</li>
-                <li>Scroll down and tap "Add to Home Screen"</li>
-                <li>Tap "Add" to confirm</li>
+                <li>Scroll down and tap &quot;Add to Home Screen&quot;</li>
+                <li>Tap &quot;Add&quot; to confirm</li>
               </ol>
               <div className="flex space-x-3">
                 <button

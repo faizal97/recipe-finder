@@ -20,7 +20,7 @@ export default function InstallButton() {
   useEffect(() => {
     // Check if app is already installed
     const standalone = window.matchMedia('(display-mode: standalone)').matches || 
-                      (window.navigator as any).standalone ||
+                      (window.navigator as unknown as { standalone?: boolean }).standalone ||
                       document.referrer.includes('android-app://')
     setIsStandalone(standalone)
 
