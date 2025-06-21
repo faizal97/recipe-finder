@@ -26,8 +26,8 @@ WORKDIR /root/
 # Copy the binary from builder stage
 COPY --from=builder /app/recipe-finder-backend .
 
-# Copy data directory if it exists
-COPY --from=builder /app/data ./data
+# Create data directory for runtime storage
+RUN mkdir -p ./data
 
 # Expose port
 EXPOSE 8080
