@@ -1,18 +1,14 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
   "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "rewrites": [
-    {
-      "source": "/sw.js",
-      "destination": "/sw.js"
-    },
-    {
-      "source": "/manifest.json",
-      "destination": "/manifest.json"
+  "outputDirectory": ".next",
+  "functions": {
+    "app/**/*.js": {
+      "maxDuration": 30
     }
-  ],
+  },
   "headers": [
     {
       "source": "/sw.js",
@@ -31,10 +27,19 @@
       "source": "/manifest.json",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
+          "key": "Content-Type",
+          "value": "application/manifest+json"
         }
       ]
     }
-  ]
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ],
+  "env": {
+    "BUILD_TIMESTAMP": "2025-06-21T15:30:00Z"
+  }
 } 
