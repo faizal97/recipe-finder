@@ -5,11 +5,6 @@ const nextConfig = {
     return `build-${Date.now()}`
   },
   
-  // Disable caching during build
-  experimental: {
-    isrMemoryCacheSize: 0,
-  },
-  
   // PWA and service worker support
   async headers() {
     return [
