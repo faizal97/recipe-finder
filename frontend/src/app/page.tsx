@@ -19,6 +19,9 @@ export default function Home() {
               <Link href="/search" className="text-gray-600 hover:text-orange-600 transition-colors">
                 Search
               </Link>
+              <Link href="/demo" className="text-gray-600 hover:text-orange-600 transition-colors">
+                Demo
+              </Link>
               <Link href="/add-recipe" className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
                 Add Recipe
               </Link>
@@ -36,7 +39,7 @@ export default function Home() {
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
             Find, save, and share your favorite recipes. From quick weeknight dinners to impressive weekend feasts, 
-            we've got something for every taste and skill level.
+            we&apos;ve got something for every taste and skill level.
           </p>
           
           {/* Search Bar */}
@@ -76,7 +79,7 @@ export default function Home() {
 
             <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
               <ChefHat className="h-12 w-12 text-orange-600 mx-auto" />
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">Chef's Special</h3>
+              <h3 className="mt-4 text-xl font-semibold text-gray-900">Chef&apos;s Special</h3>
               <p className="mt-2 text-gray-600">Impressive recipes for special occasions</p>
               <Link href="/search?filter=special" className="mt-4 inline-block text-orange-600 hover:text-orange-700 font-medium">
                 Browse Special Recipes →
