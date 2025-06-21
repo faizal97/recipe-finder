@@ -1,5 +1,6 @@
 // API Configuration
 // Updated to use Railway backend in production
+// Last updated: 2025-06-21 15:15:00 UTC
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export const API_ENDPOINTS = {
