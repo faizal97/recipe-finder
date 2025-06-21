@@ -1,17 +1,25 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 	"recipe-finder-backend/handlers"
 )
 
 func main() {
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: .env file not found: %v", err)
+	}
+
 	// Create handlers
 	recipeHandler := handlers.NewRecipeHandler()
 
@@ -22,22 +30,46 @@ func main() {
 	api := r.PathPrefix("/api/v1").Subrouter()
 	
 	// Health check endpoint
-	api.HandleFunc("/health", healthCheck).Methods("GET")
+	api.HandleFunc("/health", recipeHandler.HealthCheck).Methods("GET")
 	
-	// Recipe endpoints
-	api.HandleFunc("/recipes", recipeHandler.GetRecipes).Methods("GET")
-	api.HandleFunc("/recipes", recipeHandler.CreateRecipe).Methods("POST")
-	api.HandleFunc("/recipes/{id}", recipeHandler.GetRecipe).Methods("GET")
-	api.HandleFunc("/recipes/{id}", recipeHandler.UpdateRecipe).Methods("PUT")
-	api.HandleFunc("/recipes/{id}", recipeHandler.DeleteRecipe).Methods("DELETE")
+	// Storage stats endpoint
+	api.HandleFunc("/storage/stats", recipeHandler.GetStorageStats).Methods("GET")
 	
-	// Search endpoint
-	api.HandleFunc("/search", recipeHandler.SearchRecipes).Methods("GET")
+	// Storage filename mapping endpoint
+	api.HandleFunc("/storage/mapping", recipeHandler.CreateFilenameMapping).Methods("POST")
+	
+	// Ingredient search endpoint
+	api.HandleFunc("/ingredients/search", recipeHandler.SearchIngredients).Methods("GET")
+	
+	// Recipe search endpoint for autocomplete
+	api.HandleFunc("/search/recipes", recipeHandler.SearchRecipes).Methods("GET")
+	
+	// Recipe details endpoint - MUST come before generic recipe search
+	fmt.Printf("📝 Registering route: GET /api/v1/recipes/{id}\n")
+	api.HandleFunc("/recipes/{id}", recipeHandler.GetRecipeDetails).Methods("GET")
+	
+	// Test route
+	api.HandleFunc("/recipes/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "test route works"})
+	}).Methods("GET")
+	
+	// Recipe search endpoint - accepts ingredients and returns recipes (different path)
+	r.HandleFunc("/api/recipes", recipeHandler.GetRecipesByIngredients).Methods("POST", "OPTIONS")
 
 	// Setup CORS
+	allowedOrigins := []string{"http://localhost:3000", "http://localhost:3001"} // Default origins
+	if origins := os.Getenv("ALLOWED_ORIGINS"); origins != "" {
+		allowedOrigins = strings.Split(origins, ",")
+		// Trim whitespace from each origin
+		for i, origin := range allowedOrigins {
+			allowedOrigins[i] = strings.TrimSpace(origin)
+		}
+	}
+	
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"}, // Frontend URL
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedOrigins: allowedOrigins,
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"*"},
 	})
 
@@ -50,24 +82,17 @@ func main() {
 	// Start server
 	handler := c.Handler(r)
 	fmt.Printf("🚀 Recipe Finder API server starting on port %s\n", port)
-	fmt.Printf("📚 API Documentation: http://localhost:%s/api/v1/health\n", port)
-	fmt.Printf("🔍 Search endpoint: http://localhost:%s/api/v1/search\n", port)
-	fmt.Printf("📝 Recipes endpoint: http://localhost:%s/api/v1/recipes\n", port)
+	fmt.Printf("📚 Health check: http://localhost:%s/api/v1/health\n", port)
+	fmt.Printf("🍽️  Recipe search: POST http://localhost:%s/api/recipes\n", port)
+	fmt.Printf("🔍 Recipe details: GET http://localhost:%s/api/v1/recipes/{id}\n", port)
+	
+	// Walk through all routes for debugging
+	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		template, _ := route.GetPathTemplate()
+		methods, _ := route.GetMethods()
+		fmt.Printf("📋 Route: %v %s\n", methods, template)
+		return nil
+	})
+	
 	log.Fatal(http.ListenAndServe(":"+port, handler))
-}
-
-// Health check handler
-func healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{
-		"status": "healthy", 
-		"message": "Recipe Finder API is running",
-		"version": "1.0.0",
-		"endpoints": {
-			"recipes": "/api/v1/recipes",
-			"search": "/api/v1/search",
-			"health": "/api/v1/health"
-		}
-	}`)
 } 

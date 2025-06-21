@@ -1,227 +1,330 @@
-# Recipe Finder Web App
+# 🍽️ Recipe Finder
 
-A full-stack web application for discovering, managing, and sharing recipes. Built with **Next.js** for the frontend and **Go** for the backend API.
+A modern, full-stack Progressive Web App (PWA) that helps you discover amazing recipes based on ingredients you have at home. Built with Next.js, Go, and the Spoonacular API.
 
-## 🚀 Features
+![Recipe Finder Banner](https://via.placeholder.com/800x200/ea580c/ffffff?text=Recipe+Finder+-+Find+Perfect+Recipes)
 
-- **Recipe Management**: Create, read, update, and delete recipes
-- **Advanced Search**: Search recipes by ingredients, category, difficulty, and more
-- **Responsive Design**: Beautiful UI that works on all devices
-- **Fast API**: Lightweight Go backend with RESTful API
-- **Modern Frontend**: React-based frontend with Tailwind CSS
-- **Real-time Updates**: Dynamic content loading and updates
+## ✨ Features
 
-## 🛠️ Tech Stack
+### 🔍 Smart Recipe Search
+- **Ingredient-based search**: Find recipes using ingredients you already have
+- **Real-time autocomplete**: Intelligent ingredient suggestions as you type
+- **Advanced filtering**: Filter by dietary restrictions, cuisine type, and more
+- **Recipe details**: Comprehensive recipe information including ingredients, instructions, and nutrition
 
-### Frontend
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **Lucide React** - Beautiful icons
+### 💾 Recipe Management
+- **Save favorites**: Keep track of your favorite recipes
+- **Offline access**: View saved recipes even without internet connection
+- **Local storage**: All saved recipes are stored locally for quick access
 
-### Backend
-- **Go 1.24** - Fast and efficient backend
-- **Gorilla Mux** - HTTP router and URL matcher
-- **CORS** - Cross-Origin Resource Sharing support
+### 📱 Progressive Web App (PWA)
+- **Mobile install prompt**: Install the app directly to your home screen
+- **Offline functionality**: Works without internet connection
+- **Native app experience**: Looks and feels like a native mobile app
+- **Cross-platform**: Works on iOS, Android, and desktop
 
-## 📁 Project Structure
+### 🎨 Modern UI/UX
+- **Responsive design**: Optimized for mobile, tablet, and desktop
+- **Mobile-first approach**: Touch-friendly interface with intuitive navigation
+- **Dark/light theme support**: Adapts to your system preferences
+- **Smooth animations**: Delightful micro-interactions throughout the app
 
-```
-recipe-finder/
-├── frontend/                 # Next.js frontend application
-│   ├── src/
-│   │   ├── app/             # App Router pages
-│   │   │   ├── page.tsx     # Homepage
-│   │   │   └── recipes/     # Recipe pages
-│   │   └── components/      # Reusable components
-│   ├── package.json
-│   └── README.md
-├── backend/                  # Go backend API
-│   ├── main.go              # Application entry point
-│   ├── models/              # Data models
-│   ├── handlers/            # HTTP handlers
-│   ├── go.mod
-│   └── README.md
-├── README.md                # This file
-└── .gitignore
-```
+### ⚡ Performance & Caching
+- **Three-tier caching system**: Memory → Persistent Storage → API
+- **Smart caching**: Reduces API calls and improves response times
+- **Optimized loading**: Fast page loads with efficient resource management
 
-## 🚦 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- **Node.js** 18 or higher
-- **Go** 1.19 or higher
-- **Git**
+- **Node.js** 18+ and npm
+- **Go** 1.19+
+- **Spoonacular API Key** (free at [spoonacular.com](https://spoonacular.com/food-api))
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/recipe-finder.git
    cd recipe-finder
    ```
 
 2. **Set up the backend**
    ```bash
    cd backend
+   
+   # Copy and configure environment file
+   cp .env.example .env
+   # Edit .env and add your Spoonacular API key
+   
+   # Install dependencies
    go mod tidy
+   
+   # Run the server
    go run main.go
    ```
-   The API will be available at `http://localhost:8080`
 
-3. **Set up the frontend** (in a new terminal)
+3. **Set up the frontend**
    ```bash
    cd frontend
+   
+   # Install dependencies
    npm install
+   
+   # Start development server
    npm run dev
    ```
-   The web app will be available at `http://localhost:3000`
 
-### Quick Test
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8080
 
-1. **Test the API**
-   ```bash
-   curl http://localhost:8080/api/v1/health
-   ```
+## 🏗️ Architecture
 
-2. **Open the web app**
-   Navigate to `http://localhost:3000` in your browser
-
-## 🔧 Development
-
-### Backend Development
-
-```bash
-cd backend
-
-# Run the server
-go run main.go
-
-# Build for production
-go build -o recipe-finder-api main.go
-
-# Run tests
-go test ./...
+### Frontend (Next.js 15)
+```
+frontend/
+├── src/
+│   ├── app/                 # App Router pages
+│   │   ├── about/          # About page
+│   │   ├── offline/        # PWA offline page
+│   │   ├── recipes/        # Recipe management
+│   │   └── layout.tsx      # Root layout with PWA setup
+│   ├── components/         # Reusable UI components
+│   │   ├── Navigation.tsx  # Mobile-responsive navigation
+│   │   ├── RecipeCard.tsx  # Recipe display component
+│   │   ├── SearchBar.tsx   # Global search functionality
+│   │   ├── PWAInstallPrompt.tsx  # Install popup
+│   │   └── InstallButton.tsx     # Manual install button
+│   ├── types/             # TypeScript type definitions
+│   └── utils/             # Utility functions
+├── public/
+│   ├── icons/             # PWA app icons
+│   ├── manifest.json      # PWA manifest
+│   └── sw.js             # Service worker
+└── package.json
 ```
 
-### Frontend Development
-
-```bash
-cd frontend
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linting
-npm run lint
+### Backend (Go)
+```
+backend/
+├── handlers/              # HTTP request handlers
+│   └── recipe_handler.go  # Recipe search and details
+├── services/              # Business logic
+│   ├── spoonacular.go     # Spoonacular API integration
+│   └── storage.go         # Persistent caching system
+├── models/                # Data structures
+│   └── recipe.go          # Recipe model
+├── data/                  # Cached data storage
+└── main.go               # Server entry point
 ```
 
-## 📚 API Documentation
+## 🛠️ Technology Stack
 
-### Base URL
-```
-http://localhost:8080/api/v1
+### Frontend
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **PWA**: Custom service worker + manifest
+- **State Management**: React hooks + localStorage
+
+### Backend
+- **Language**: Go 1.19+
+- **Router**: Gorilla Mux
+- **HTTP Client**: Native Go net/http
+- **Caching**: Multi-tier (memory + file system)
+- **API Integration**: Spoonacular Food API
+
+### External APIs
+- **Spoonacular API**: Recipe data, ingredient search, nutrition info
+
+## 📱 PWA Features
+
+### Installation
+- **Automatic prompts**: Shows install popup on mobile after 3 seconds
+- **Manual installation**: Install button in navigation
+- **Cross-platform**: Works on iOS (Safari) and Android (Chrome/Edge)
+
+### Offline Capabilities
+- **Cached pages**: Home, recipes, about pages work offline
+- **Saved recipes**: All saved recipes available offline
+- **Graceful degradation**: Offline page for uncached content
+
+### Native App Experience
+- **Standalone mode**: Launches without browser UI
+- **App icons**: Custom branded icons for home screen
+- **Splash screen**: Custom loading screen
+- **App shortcuts**: Quick access to key features
+
+## 🔧 Configuration
+
+### Environment Variables
+
+#### Backend (.env)
+```env
+# Required: Spoonacular API Configuration
+SPOONACULAR_API_KEY=your_spoonacular_api_key_here
+
+# Optional: Server Configuration
+PORT=8080
+
+# Optional: CORS Configuration (comma-separated)
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# Optional: Cache Configuration
+CACHE_DURATION_HOURS=24
+
+# Optional: API Configuration
+API_TIMEOUT_SECONDS=30
 ```
 
-### Endpoints
+#### Frontend (optional .env.local)
+```env
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# PWA Configuration
+NEXT_PUBLIC_APP_NAME=RecipeFinder
+NEXT_PUBLIC_APP_DESCRIPTION=Find perfect recipes based on ingredients you have at home
+```
+
+> **📝 Note**: Copy `.env.example` files and rename them to `.env` to get started quickly.
+
+### API Endpoints
+
+#### Recipe Search
+```http
+POST /api/recipes
+Content-Type: application/json
+
+{
+  "ingredients": ["chicken", "rice", "vegetables"],
+  "number": 12
+}
+```
+
+#### Recipe Details
+```http
+GET /api/v1/recipes/{id}
+```
+
+#### Ingredient Search
+```http
+GET /api/v1/ingredients/search?query=chick
+```
 
 #### Health Check
-- `GET /health` - Check API status
-
-#### Recipes
-- `GET /recipes` - Get all recipes
-- `POST /recipes` - Create a new recipe
-- `GET /recipes/{id}` - Get a specific recipe
-- `PUT /recipes/{id}` - Update a recipe
-- `DELETE /recipes/{id}` - Delete a recipe
-
-#### Search
-- `GET /search?q={query}&category={category}&difficulty={difficulty}` - Search recipes
-
-### Example API Usage
-
-#### Create a Recipe
-```bash
-curl -X POST http://localhost:8080/api/v1/recipes \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Spaghetti Carbonara",
-    "description": "Classic Italian pasta dish",
-    "ingredients": ["spaghetti", "eggs", "bacon", "parmesan", "black pepper"],
-    "instructions": ["Cook pasta", "Fry bacon", "Mix eggs and cheese", "Combine all"],
-    "prep_time": 15,
-    "cook_time": 20,
-    "servings": 4,
-    "difficulty": "medium",
-    "category": "Italian",
-    "tags": ["pasta", "quick", "dinner"]
-  }'
+```http
+GET /api/v1/health
 ```
 
-#### Search Recipes
+## 🎯 Usage Examples
+
+### Basic Recipe Search
+1. Enter ingredients you have (e.g., "chicken, rice, onion")
+2. Browse through recipe suggestions
+3. Click on any recipe to view full details
+4. Save recipes you like for later
+
+### Advanced Features
+- **Ingredient autocomplete**: Start typing and select from suggestions
+- **Recipe filtering**: Use dietary restrictions and cuisine filters
+- **Offline browsing**: Access saved recipes without internet
+- **Mobile installation**: Install app to home screen for quick access
+
+## 🚀 Deployment
+
+### Frontend (Vercel)
 ```bash
-curl "http://localhost:8080/api/v1/search?q=pasta&category=Italian&difficulty=medium"
+# Build the frontend
+cd frontend
+npm run build
+
+# Deploy to Vercel
+npx vercel --prod
 ```
 
-## 🌟 Features Roadmap
+### Backend (Railway/Heroku)
+```bash
+# Build the Go binary
+cd backend
+go build -o recipe-finder-backend .
 
-### Phase 1 (Current)
-- [x] Basic CRUD operations
-- [x] Recipe search functionality
-- [x] Responsive web interface
-- [x] REST API with Go
-- [x] Modern React frontend
+# Deploy using your preferred platform
+```
 
-### Phase 2 (Planned)
-- [ ] User authentication and authorization
-- [ ] Recipe image upload and storage
-- [ ] Recipe ratings and reviews
-- [ ] Advanced filtering and sorting
-- [ ] Recipe collections/favorites
-- [ ] Social sharing features
+### Docker (Optional)
+```dockerfile
+# Dockerfile example for backend
+FROM golang:1.19-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o main .
 
-### Phase 3 (Future)
-- [ ] Database integration (PostgreSQL)
-- [ ] Recipe import from URLs
-- [ ] Nutritional information
-- [ ] Meal planning features
-- [ ] Mobile app (React Native)
-- [ ] Recipe recommendation engine
+FROM alpine:latest
+RUN apk add --no-cache ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/main .
+CMD ["./main"]
+```
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m 'Add some amazing feature'
+   ```
+4. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
 
-## 📄 License
+### Development Guidelines
+- Follow the existing code style and patterns
+- Add tests for new functionality
+- Update documentation as needed
+- Ensure mobile responsiveness for UI changes
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org/) - The React framework for production
-- [Go](https://golang.org/) - The Go programming language
-- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
-- [Lucide](https://lucide.dev/) - Beautiful & consistent icons
+- **Spoonacular API** for providing comprehensive recipe data
+- **Next.js team** for the amazing React framework
+- **Tailwind CSS** for the utility-first CSS framework
+- **Lucide** for the beautiful icon set
 
 ## 📞 Support
 
-If you have any questions or run into issues, please:
+- **Issues**: [GitHub Issues](https://github.com/yourusername/recipe-finder/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/recipe-finder/discussions)
+- **Email**: your.email@example.com
 
-1. Check the [Issues](../../issues) page
-2. Create a new issue if your problem isn't already listed
-3. Provide detailed information about your environment and the problem
+## 🗺️ Roadmap
+
+- [ ] User authentication and profiles
+- [ ] Recipe sharing and social features
+- [ ] Meal planning and shopping lists
+- [ ] Nutrition tracking and dietary goals
+- [ ] Recipe rating and review system
+- [ ] Multi-language support
+- [ ] Recipe import from URLs
+- [ ] Voice search functionality
 
 ---
 
-**Happy Cooking! 👨‍🍳👩‍🍳** 
+<div align="center">
+  <p>Made with ❤️ by <a href="https://github.com/yourusername">Your Name</a></p>
+  <p>
+    <a href="#-recipe-finder">Back to top</a>
+  </p>
+</div> 

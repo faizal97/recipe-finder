@@ -2,68 +2,69 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChefHat, Clock, Users, Plus } from 'lucide-react'
+import { ChefHat, Heart, ArrowLeft } from 'lucide-react'
+import { getSavedRecipes, SavedRecipe } from '@/utils/savedRecipes'
+import RecipeCard from '@/components/RecipeCard'
 import { Recipe } from '@/types/recipe'
 
-export default function RecipesPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([])
+export default function MyRecipesPage() {
+  const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchRecipes()
+    // Load saved recipes from localStorage
+    const recipes = getSavedRecipes()
+    setSavedRecipes(recipes)
+    setLoading(false)
+
+    // Add event listener to refresh when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const updatedRecipes = getSavedRecipes()
+        setSavedRecipes(updatedRecipes)
+      }
+    }
+
+    const handleFocus = () => {
+      const updatedRecipes = getSavedRecipes()
+      setSavedRecipes(updatedRecipes)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
-  const fetchRecipes = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/v1/recipes')
-      if (!response.ok) {
-        throw new Error('Failed to fetch recipes')
-      }
-      const data = await response.json()
-      setRecipes(data.recipes || [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
+  // Convert SavedRecipe to Recipe format for RecipeCard component
+  const convertToRecipeFormat = (savedRecipe: SavedRecipe): Recipe => {
+    return {
+      id: savedRecipe.id,
+      title: savedRecipe.title,
+      description: 'Saved recipe', // We don't store description in SavedRecipe
+      ingredients: [], // We don't store full ingredients in SavedRecipe
+      prepTime: savedRecipe.prepTime,
+      cookTime: savedRecipe.cookTime,
+      servings: savedRecipe.servings,
+      imageUrl: savedRecipe.imageUrl,
+      matchCount: 0 // Not applicable for saved recipes
     }
   }
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return 'bg-green-100 text-green-800'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'hard':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
+  const handleRefresh = () => {
+    const recipes = getSavedRecipes()
+    setSavedRecipes(recipes)
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <ChefHat className="h-12 w-12 text-orange-600 mx-auto animate-pulse" />
-          <p className="mt-4 text-gray-600">Loading recipes...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Error: {error}</p>
-          <button 
-            onClick={fetchRecipes}
-            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            Try Again
-          </button>
+          <Heart className="h-12 w-12 text-red-500 mx-auto animate-pulse" />
+          <p className="mt-4 text-gray-600">Loading saved recipes...</p>
         </div>
       </div>
     )
@@ -71,139 +72,97 @@ export default function RecipesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center">
-                <ChefHat className="h-8 w-8 text-orange-600" />
-                <h1 className="ml-2 text-2xl font-bold text-gray-900">Recipe Finder</h1>
-              </Link>
-            </div>
-            <nav className="flex space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-orange-600 transition-colors">
-                Home
-              </Link>
-              <Link href="/recipes" className="text-orange-600 font-medium">
-                Recipes
-              </Link>
-              <Link href="/search" className="text-gray-600 hover:text-orange-600 transition-colors">
-                Search
-              </Link>
-              <Link href="/demo" className="text-gray-600 hover:text-orange-600 transition-colors">
-                Demo
-              </Link>
-              <Link href="/add-recipe" className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
-                Add Recipe
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">All Recipes</h2>
-            <p className="mt-2 text-gray-600">
-              {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} found
-            </p>
-          </div>
-          <Link
-            href="/add-recipe"
-            className="flex items-center bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Add Recipe
-          </Link>
-        </div>
-
-        {recipes.length === 0 ? (
-          <div className="text-center py-12">
-            <ChefHat className="h-24 w-24 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No recipes yet</h3>
-            <p className="text-gray-600 mb-6">Get started by adding your first recipe!</p>
-            <Link
-              href="/add-recipe"
-              className="inline-flex items-center bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link 
+              href="/"
+              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors touch-manipulation"
             >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Your First Recipe
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
+            </Link>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-red-500 fill-current" />
+                My Saved Recipes
+              </h1>
+              <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
+                {savedRecipes.length} saved recipe{savedRecipes.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+          
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors touch-manipulation self-start sm:self-auto"
+          >
+            Refresh
+          </button>
+        </div>
+
+        {savedRecipes.length === 0 ? (
+          <div className="text-center py-12 sm:py-16">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No saved recipes yet</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto text-sm sm:text-base px-4">
+              Start exploring recipes and save your favorites by clicking the heart icon on any recipe card or detail page.
+            </p>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors touch-manipulation"
+            >
+              <ChefHat className="h-5 w-5" />
+              Discover Recipes
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe) => (
-              <div key={recipe.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                {recipe.image_url && (
-                  <img
-                    src={recipe.image_url}
-                    alt={recipe.title}
-                    className="w-full h-48 object-cover"
-                  />
-                )}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900 line-clamp-2">
-                      {recipe.title}
-                    </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(recipe.difficulty)}`}>
-                      {recipe.difficulty}
-                    </span>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    {recipe.description}
-                  </p>
+          <>
+            {/* Saved date info */}
+            <div className="mb-4 sm:mb-6 text-xs sm:text-sm text-gray-500">
+              Most recently saved: {new Date(savedRecipes[0]?.savedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
 
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {recipe.prep_time + recipe.cook_time} min
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {recipe.servings} servings
-                    </div>
-                  </div>
+            {/* Recipe Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {savedRecipes.map((savedRecipe) => (
+                <RecipeCard
+                  key={savedRecipe.id}
+                  recipe={convertToRecipeFormat(savedRecipe)}
+                  userIngredients={[]} // No ingredients filter on saved recipes page
+                />
+              ))}
+            </div>
 
-                  {recipe.category && (
-                    <div className="mb-4">
-                      <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                        {recipe.category}
-                      </span>
-                    </div>
-                  )}
-
-                  {recipe.tags && recipe.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {recipe.tags.slice(0, 3).map((tag, index) => (
-                        <span key={index} className="inline-block bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs">
-                          {tag}
-                        </span>
-                      ))}
-                      {recipe.tags.length > 3 && (
-                        <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                          +{recipe.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  <Link
-                    href={`/recipes/${recipe.id}`}
-                    className="block w-full text-center bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition-colors"
-                  >
-                    View Recipe
-                  </Link>
+            {/* Additional Info */}
+            <div className="mt-8 sm:mt-12 bg-white rounded-lg shadow-sm p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">About Your Saved Recipes</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600">
+                <div>
+                  <p className="font-medium text-gray-900 mb-1">Total Saved</p>
+                  <p>{savedRecipes.length} recipes</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 mb-1">Storage</p>
+                  <p>Saved locally in your browser</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 mb-1">Privacy</p>
+                  <p>Your data never leaves your device</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         )}
-      </main>
+      </div>
     </div>
   )
 } 

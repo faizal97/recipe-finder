@@ -5,16 +5,11 @@ export interface Recipe {
   title: string
   description: string
   ingredients: string[]
-  instructions: string[]
-  prep_time: number // in minutes
-  cook_time: number // in minutes
+  prepTime: string
+  cookTime: string
   servings: number
-  difficulty: 'easy' | 'medium' | 'hard'
-  category: string
-  tags: string[]
-  image_url?: string
-  created_at: string
-  updated_at: string
+  imageUrl: string
+  matchCount: number
 }
 
 export interface CreateRecipeRequest {

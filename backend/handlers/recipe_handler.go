@@ -2,237 +2,273 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
-
+	"recipe-finder-backend/services"
 	"github.com/gorilla/mux"
-	"recipe-finder-backend/models"
 )
 
 // RecipeHandler handles recipe-related HTTP requests
-type RecipeHandler struct {
-	// In a real application, this would be a database connection or service
-	// For now, we'll use an in-memory slice for demonstration
-	recipes []models.Recipe
+type RecipeHandler struct{
+	spoonacularService *services.SpoonacularService
+	storageService     *services.StorageService
 }
 
 // NewRecipeHandler creates a new recipe handler
 func NewRecipeHandler() *RecipeHandler {
 	return &RecipeHandler{
-		recipes: []models.Recipe{},
+		spoonacularService: services.NewSpoonacularService(),
+		storageService:     services.NewStorageService(),
 	}
 }
 
-// GetRecipes handles GET /api/v1/recipes
-func (h *RecipeHandler) GetRecipes(w http.ResponseWriter, r *http.Request) {
+// HealthCheck handles GET /api/v1/health
+func (h *RecipeHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	
 	response := map[string]interface{}{
-		"recipes": h.recipes,
-		"total":   len(h.recipes),
+		"status":    "healthy",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"service":   "Recipe Finder API",
+		"version":   "1.0.0",
 	}
 	
 	json.NewEncoder(w).Encode(response)
 }
 
-// CreateRecipe handles POST /api/v1/recipes
-func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
-	var req models.CreateRecipeRequest
+// RecipeSearchRequest represents the request body for recipe search
+type RecipeSearchRequest struct {
+	Ingredients []string `json:"ingredients"`
+}
+
+// Recipe represents a recipe in the response
+type Recipe struct {
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Ingredients []string `json:"ingredients"`
+	PrepTime    string   `json:"prepTime"`
+	CookTime    string   `json:"cookTime"`
+	Servings    int      `json:"servings"`
+	ImageURL    string   `json:"imageUrl"`
+	MatchCount  int      `json:"matchCount"`
+}
+
+// GetRecipesByIngredients handles POST /api/recipes
+func (h *RecipeHandler) GetRecipesByIngredients(w http.ResponseWriter, r *http.Request) {
+	// Handle OPTIONS request for CORS
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req RecipeSearchRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	
-	// Create new recipe
-	recipe := models.Recipe{
-		ID:           generateID(),
-		Title:        req.Title,
-		Description:  req.Description,
-		Ingredients:  req.Ingredients,
-		Instructions: req.Instructions,
-		PrepTime:     req.PrepTime,
-		CookTime:     req.CookTime,
-		Servings:     req.Servings,
-		Difficulty:   req.Difficulty,
-		Category:     req.Category,
-		Tags:         req.Tags,
-		ImageURL:     req.ImageURL,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+
+	// Use Spoonacular service to get recipes
+	recipes, err := h.spoonacularService.SearchRecipesByIngredients(req.Ingredients)
+	if err != nil {
+		// Log the error but don't expose internal details to client
+		http.Error(w, "Failed to fetch recipes", http.StatusInternalServerError)
+		return
 	}
-	
-	// Add to in-memory storage
-	h.recipes = append(h.recipes, recipe)
-	
+
+	// If user provided ingredients, recalculate match counts for better accuracy
+	if len(req.Ingredients) > 0 {
+		for i := range recipes {
+			recipes[i].MatchCount = h.spoonacularService.CalculateMatchCount(req.Ingredients, recipes[i].Ingredients)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(recipe)
-}
-
-// GetRecipe handles GET /api/v1/recipes/{id}
-func (h *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	
-	// Find recipe by ID
-	for _, recipe := range h.recipes {
-		if recipe.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(recipe)
-			return
-		}
+	response := map[string]interface{}{
+		"recipes":     recipes,
+		"total":       len(recipes),
+		"ingredients": req.Ingredients,
 	}
 	
-	http.Error(w, "Recipe not found", http.StatusNotFound)
+	json.NewEncoder(w).Encode(response)
 }
 
-// UpdateRecipe handles PUT /api/v1/recipes/{id}
-func (h *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	
-	var req models.UpdateRecipeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+// GetStorageStats handles GET /api/v1/storage/stats
+func (h *RecipeHandler) GetStorageStats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
-	// Find and update recipe
-	for i, recipe := range h.recipes {
-		if recipe.ID == id {
-			// Update fields if provided
-			if req.Title != nil {
-				recipe.Title = *req.Title
-			}
-			if req.Description != nil {
-				recipe.Description = *req.Description
-			}
-			if req.Ingredients != nil {
-				recipe.Ingredients = *req.Ingredients
-			}
-			if req.Instructions != nil {
-				recipe.Instructions = *req.Instructions
-			}
-			if req.PrepTime != nil {
-				recipe.PrepTime = *req.PrepTime
-			}
-			if req.CookTime != nil {
-				recipe.CookTime = *req.CookTime
-			}
-			if req.Servings != nil {
-				recipe.Servings = *req.Servings
-			}
-			if req.Difficulty != nil {
-				recipe.Difficulty = *req.Difficulty
-			}
-			if req.Category != nil {
-				recipe.Category = *req.Category
-			}
-			if req.Tags != nil {
-				recipe.Tags = *req.Tags
-			}
-			if req.ImageURL != nil {
-				recipe.ImageURL = *req.ImageURL
-			}
-			
-			recipe.UpdatedAt = time.Now()
-			h.recipes[i] = recipe
-			
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(recipe)
-			return
-		}
+
+	stats, err := h.storageService.GetStorageStats()
+	if err != nil {
+		http.Error(w, "Failed to get storage stats", http.StatusInternalServerError)
+		return
 	}
-	
-	http.Error(w, "Recipe not found", http.StatusNotFound)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
 }
 
-// DeleteRecipe handles DELETE /api/v1/recipes/{id}
-func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-	
-	// Find and remove recipe
-	for i, recipe := range h.recipes {
-		if recipe.ID == id {
-			// Remove recipe from slice
-			h.recipes = append(h.recipes[:i], h.recipes[i+1:]...)
-			
-			w.Header().Set("Content-Type", "application/json")
-			response := map[string]string{
-				"message": "Recipe deleted successfully",
-				"id":      id,
-			}
-			json.NewEncoder(w).Encode(response)
-			return
-		}
+// CreateFilenameMapping handles POST /api/v1/storage/mapping
+func (h *RecipeHandler) CreateFilenameMapping(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
-	
-	http.Error(w, "Recipe not found", http.StatusNotFound)
+
+	if err := h.storageService.CreateFilenameMapping(); err != nil {
+		http.Error(w, "Failed to create filename mapping", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{
+		"status": "success",
+		"message": "Filename mapping created successfully",
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
-// SearchRecipes handles GET /api/v1/search
-func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
+// SearchIngredients handles GET /api/v1/ingredients/search
+func (h *RecipeHandler) SearchIngredients(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get query parameter
 	query := r.URL.Query().Get("q")
-	category := r.URL.Query().Get("category")
-	difficulty := r.URL.Query().Get("difficulty")
-	
-	var filteredRecipes []models.Recipe
-	
-	// Simple search implementation
-	for _, recipe := range h.recipes {
-		match := true
-		
-		// Filter by query (search in title and description)
-		if query != "" {
-			if !contains(recipe.Title, query) && !contains(recipe.Description, query) {
-				match = false
-			}
+	if query == "" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"ingredients": []interface{}{},
+			"query":       "",
+		})
+		return
+	}
+
+	// Search for ingredients
+	ingredients, err := h.spoonacularService.SearchIngredients(query)
+	if err != nil {
+		http.Error(w, "Failed to search ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	// Return results
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]interface{}{
+		"ingredients": ingredients,
+		"query":       query,
+		"total":       len(ingredients),
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+// SearchRecipes handles GET /api/v1/search/recipes
+func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get query parameter
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"recipes": []interface{}{},
+			"query":   "",
+			"total":   0,
+		})
+		return
+	}
+
+	// Search for recipes using the existing service but filter by title
+	recipes, err := h.spoonacularService.SearchRecipesByIngredients([]string{query})
+	if err != nil {
+		http.Error(w, "Failed to search recipes", http.StatusInternalServerError)
+		return
+	}
+
+	// Filter recipes that contain the query in the title
+	var filteredRecipes []Recipe
+	for _, recipe := range recipes {
+		if len(filteredRecipes) >= 8 { // Limit to 8 results for autocomplete
+			break
 		}
-		
-		// Filter by category
-		if category != "" && recipe.Category != category {
-			match = false
-		}
-		
-		// Filter by difficulty
-		if difficulty != "" && recipe.Difficulty != difficulty {
-			match = false
-		}
-		
-		if match {
-			filteredRecipes = append(filteredRecipes, recipe)
+		// Check if title contains the search query (case insensitive)
+		if containsIgnoreCase(recipe.Title, query) {
+			// Convert services.Recipe to handlers.Recipe
+			filteredRecipes = append(filteredRecipes, Recipe{
+				ID:          recipe.ID,
+				Title:       recipe.Title,
+				Description: recipe.Description,
+				Ingredients: recipe.Ingredients,
+				PrepTime:    recipe.PrepTime,
+				CookTime:    recipe.CookTime,
+				Servings:    recipe.Servings,
+				ImageURL:    recipe.ImageURL,
+				MatchCount:  recipe.MatchCount,
+			})
 		}
 	}
-	
+
+	// Return results
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]interface{}{
 		"recipes": filteredRecipes,
-		"total":   len(filteredRecipes),
 		"query":   query,
+		"total":   len(filteredRecipes),
 	}
 	json.NewEncoder(w).Encode(response)
 }
 
-// Helper functions
-func generateID() string {
-	// Simple ID generation - in production, use UUID or similar
-	return time.Now().Format("20060102150405")
+// Helper function to check if a string contains another string (case insensitive)
+func containsIgnoreCase(s, substr string) bool {
+	return len(s) >= len(substr) && 
+		   (s == substr || 
+		   	(len(s) > len(substr) && 
+		   	 (s[:len(substr)] == substr || 
+		   	  s[len(s)-len(substr):] == substr || 
+		   	  strings.Contains(strings.ToLower(s), strings.ToLower(substr)))))
 }
 
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || 
-		(len(s) > len(substr) && (s[:len(substr)] == substr || 
-		s[len(s)-len(substr):] == substr || 
-		containsSubstring(s, substr))))
-}
-
-func containsSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
+// GetRecipeDetails handles GET /api/v1/recipes/{id}
+func (h *RecipeHandler) GetRecipeDetails(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("🔍 Recipe details request: %s %s\n", r.Method, r.URL.Path)
+	
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
-	return false
+
+	// Extract recipe ID from URL using gorilla/mux
+	vars := mux.Vars(r)
+	recipeID := vars["id"]
+	fmt.Printf("🔑 Extracted recipe ID: '%s'\n", recipeID)
+	
+	if recipeID == "" {
+		http.Error(w, "Recipe ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get recipe details from Spoonacular service
+	recipeDetails, err := h.spoonacularService.GetRecipeDetails(recipeID)
+	if err != nil {
+		// Log the error but don't expose internal details to client
+		fmt.Printf("Error fetching recipe details for ID %s: %v\n", recipeID, err)
+		http.Error(w, "Failed to fetch recipe details", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(recipeDetails)
 } 
