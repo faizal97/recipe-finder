@@ -1,8 +1,4 @@
 {
-  "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
-  },
   "deploy": {
     "healthcheckPath": "/api/v1/health",
     "healthcheckTimeout": 100,
