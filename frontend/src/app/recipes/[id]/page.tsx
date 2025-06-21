@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { saveRecipe, unsaveRecipe, isRecipeSaved } from '@/utils/savedRecipes'
 import { API_ENDPOINTS } from '@/utils/api'
+import SocialShare from '@/components/SocialShare'
 
 interface DetailedIngredient {
   id: number
@@ -286,8 +287,9 @@ export default function RecipeDetailPage() {
                   </div>
                 </div>
 
-                {/* Save Button */}
-                <div className="mt-4 sm:mt-6">
+                {/* Action Buttons */}
+                <div className="mt-4 sm:mt-6 space-y-3">
+                  {/* Save Button */}
                   <button
                     onClick={handleSaveToggle}
                     className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 touch-manipulation ${
@@ -303,6 +305,17 @@ export default function RecipeDetailPage() {
                     />
                     <span className="text-sm sm:text-base">{isSaved ? 'Saved to My Recipes' : 'Save to My Recipes'}</span>
                   </button>
+                  
+                  {/* Share Button */}
+                  <div className="flex justify-center">
+                    <SocialShare
+                      title={recipe.title}
+                      description={recipe.summary ? recipe.summary.replace(/<[^>]*>/g, '').slice(0, 200) : recipe.description}
+                      url={typeof window !== 'undefined' ? window.location.href : ''}
+                      imageUrl={recipe.imageUrl}
+                      size="md"
+                    />
+                  </div>
                 </div>
 
                 {/* External Links */}

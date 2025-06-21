@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
 import { saveRecipe, unsaveRecipe, isRecipeSaved } from '@/utils/savedRecipes'
+import SocialShare from './SocialShare'
 
 interface RecipeCardProps {
   recipe: Recipe
@@ -74,8 +75,8 @@ export default function RecipeCard({ recipe, userIngredients }: RecipeCardProps)
       </div>
       <div className="p-4 sm:p-5">
         <h3 className="font-semibold text-gray-900 mb-2 text-base sm:text-lg leading-tight">{recipe.title}</h3>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{recipe.description}</p>
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-700 mb-3 line-clamp-2">{recipe.description}</p>
+        <p className="text-sm text-gray-700 mb-3">
           <span className="text-orange-600 font-medium">Ingredients: {recipe.matchCount}</span> / {recipe.ingredients.length}
         </p>
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
@@ -84,17 +85,27 @@ export default function RecipeCard({ recipe, userIngredients }: RecipeCardProps)
             style={{ width: `${calculateIngredientPercentage()}%` }}
           ></div>
         </div>
-        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500 mb-4 gap-2">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-gray-700 mb-4 gap-2">
           <span className="flex items-center gap-1">⏱ {recipe.prepTime}</span>
           <span className="flex items-center gap-1">🍳 {recipe.cookTime}</span>
           <span className="flex items-center gap-1">👥 {recipe.servings}</span>
         </div>
-        <Link 
-          href={`/recipes/${recipe.id}`}
-          className="block w-full text-center text-orange-600 text-sm font-medium hover:text-orange-700 bg-orange-50 hover:bg-orange-100 py-3 rounded-lg transition-colors touch-manipulation"
-        >
-          View Recipe
-        </Link>
+        <div className="flex gap-2 mb-4">
+          <Link 
+            href={`/recipes/${recipe.id}`}
+            className="flex-1 text-center text-orange-600 text-sm font-medium hover:text-orange-700 bg-orange-50 hover:bg-orange-100 py-3 rounded-lg transition-colors touch-manipulation"
+          >
+            View Recipe
+          </Link>
+          <SocialShare
+            title={recipe.title}
+            description={recipe.description}
+            url={`${typeof window !== 'undefined' ? window.location.origin : ''}/recipes/${recipe.id}`}
+            imageUrl={recipe.imageUrl}
+            size="sm"
+            className="flex-shrink-0"
+          />
+        </div>
       </div>
     </div>
   )

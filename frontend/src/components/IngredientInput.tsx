@@ -130,10 +130,10 @@ export default function IngredientInput({
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-800">
           Ingredients
           <span className="text-red-500 ml-1">*</span>
-          <span className="text-gray-500 font-normal ml-2">
+          <span className="text-gray-700 font-normal ml-2">
             ({ingredients.length}/{maxIngredients})
           </span>
         </label>
@@ -141,7 +141,7 @@ export default function IngredientInput({
           <button
             type="button"
             onClick={clearAll}
-            className="flex items-center text-sm text-gray-500 hover:text-red-600 transition-colors"
+            className="flex items-center text-sm text-gray-700 hover:text-red-600 transition-colors"
           >
             <RotateCcw className="h-4 w-4 mr-1" />
             Clear All
@@ -158,7 +158,7 @@ export default function IngredientInput({
             onChange={(e) => setNewIngredient(e.target.value)}
             onKeyDown={(e) => handleKeyPress(e, 'add')}
             placeholder={placeholder}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-700 text-gray-900"
             disabled={ingredients.length >= maxIngredients}
           />
         </div>
@@ -182,14 +182,14 @@ export default function IngredientInput({
       {/* Ingredients List */}
       {ingredients.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Added Ingredients:</h4>
+          <h4 className="text-sm font-medium text-gray-800">Added Ingredients:</h4>
           <div className="max-h-64 overflow-y-auto space-y-2 border border-gray-200 rounded-md p-3 bg-gray-50">
             {ingredients.map((ingredient, index) => (
               <div
                 key={index}
                 className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm"
               >
-                <span className="text-sm text-gray-600 font-medium min-w-0 flex-shrink-0">
+                <span className="text-sm text-gray-700 font-medium min-w-0 flex-shrink-0">
                   {index + 1}.
                 </span>
                 
@@ -201,7 +201,7 @@ export default function IngredientInput({
                       value={editingValue}
                       onChange={(e) => setEditingValue(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, 'edit')}
-                      className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-orange-500 focus:border-transparent"
+                      className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-orange-500 focus:border-transparent text-gray-900"
                       autoFocus
                     />
                     <button
@@ -215,7 +215,7 @@ export default function IngredientInput({
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
                       title="Cancel editing"
                     >
                       <X className="h-4 w-4" />
@@ -230,7 +230,7 @@ export default function IngredientInput({
                     <button
                       type="button"
                       onClick={() => startEditing(index)}
-                      className="p-1 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                      className="p-1 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
                       title="Edit ingredient"
                     >
                       <Edit2 className="h-4 w-4" />
@@ -238,7 +238,7 @@ export default function IngredientInput({
                     <button
                       type="button"
                       onClick={() => removeIngredient(index)}
-                      className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                       title="Remove ingredient"
                     >
                       <X className="h-4 w-4" />
@@ -252,7 +252,7 @@ export default function IngredientInput({
       )}
 
       {/* Helper Text */}
-      <div className="text-xs text-gray-500 space-y-1">
+      <div className="text-xs text-gray-700 space-y-1">
         <p>💡 <strong>Tips:</strong></p>
         <ul className="list-disc list-inside space-y-1 ml-4">
           <li>Include quantities and measurements (e.g., &quot;2 cups flour&quot;, &quot;1 tsp salt&quot;)</li>

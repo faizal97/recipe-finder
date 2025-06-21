@@ -112,12 +112,11 @@ export default function Home() {
     console.log('Loading all recipes...')
     setLoading(true)
     try {
-      const response = await fetch(API_ENDPOINTS.RECIPES, {
-        method: 'POST',
+      const response = await fetch(`${API_ENDPOINTS.RECIPES}?ingredients=`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ingredients: [] }), // Empty ingredients to get all recipes
       })
 
       console.log('Response status:', response.status)
@@ -144,12 +143,12 @@ export default function Home() {
 
     setLoading(true)
     try {
-      const response = await fetch(API_ENDPOINTS.RECIPES, {
-        method: 'POST',
+      const ingredientsParam = ingredients.join(',')
+      const response = await fetch(`${API_ENDPOINTS.RECIPES}?ingredients=${encodeURIComponent(ingredientsParam)}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ingredients }),
       })
 
       if (response.ok) {
@@ -204,7 +203,7 @@ export default function Home() {
             {/* Ingredients Display */}
             <div className="mb-4 min-h-[60px] p-3 border border-gray-200 rounded-lg bg-gray-50">
               {ingredients.length === 0 ? (
-                <p className="text-gray-500 text-sm">Your ingredients will appear here...</p>
+                <p className="text-gray-800 text-sm">Your ingredients will appear here...</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {ingredients.map((ingredient, index) => (
@@ -247,7 +246,7 @@ export default function Home() {
                       className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto"
                     >
                       {isSearching ? (
-                        <div className="p-3 text-center text-gray-500 text-sm">
+                        <div className="p-3 text-center text-gray-800 text-sm">
                           Searching...
                         </div>
                       ) : searchResults.length > 0 ? (
@@ -266,11 +265,11 @@ export default function Home() {
                                 target.style.display = 'none';
                               }}
                             />
-                            <span className="text-sm">{ingredient.name}</span>
+                            <span className="text-sm text-gray-900">{ingredient.name}</span>
                           </button>
                         ))
                       ) : newIngredient.length >= 2 ? (
-                        <div className="p-3 text-center text-gray-500 text-sm">
+                        <div className="p-3 text-center text-gray-800 text-sm">
                           No ingredients found
                         </div>
                       ) : null}
@@ -300,7 +299,7 @@ export default function Home() {
               <button
                 onClick={handleClearAll}
                 disabled={ingredients.length === 0}
-                className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed font-medium text-sm"
+                className="flex-1 border border-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed font-medium text-sm"
               >
                 Clear All
               </button>
@@ -311,7 +310,7 @@ export default function Home() {
           <div className="flex-1">
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{getHeaderTitle()}</h1>
-              <p className="text-gray-600">
+              <p className="text-gray-700">
                 {ingredients.length === 0 
                   ? "Discover delicious recipes from our collection" 
                   : `Recipes that match your ingredients: ${ingredients.join(', ')}`
@@ -321,7 +320,7 @@ export default function Home() {
 
             {loading ? (
               <div className="flex justify-center items-center py-12">
-                <div className="text-gray-500">Loading recipes...</div>
+                <div className="text-gray-800">Loading recipes...</div>
               </div>
             ) : recipes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -331,8 +330,8 @@ export default function Home() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-500 mb-4">No recipes found</div>
-                <p className="text-gray-400 text-sm">Try adding different ingredients or clearing your current selection</p>
+                <div className="text-gray-800 mb-4">No recipes found</div>
+                <p className="text-gray-700 text-sm">Try adding different ingredients or clearing your current selection</p>
               </div>
             )}
           </div>

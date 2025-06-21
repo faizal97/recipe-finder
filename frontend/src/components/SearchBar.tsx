@@ -102,19 +102,19 @@ export default function SearchBar({ className = "" }: SearchBarProps) {
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-700 h-4 w-4" />
         <input
           type="text"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Search recipes..."
-          className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none w-64 text-gray-900 placeholder-gray-500 bg-white"
+          className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none w-64 text-gray-900 placeholder-gray-700 bg-white"
         />
         {query && (
           <button
             onClick={clearSearch}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
           >
             <X className="h-4 w-4" />
           </button>
@@ -144,15 +144,15 @@ export default function SearchBar({ className = "" }: SearchBarProps) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-900 font-medium truncate">{recipe.title}</p>
-                    <p className="text-gray-500 text-sm">Recipe</p>
+                    <p className="text-gray-700 text-sm">Recipe</p>
                   </div>
                 </button>
               ))}
             </div>
           ) : query.length >= 2 && !loading ? (
-            <div className="py-4 px-4 text-center text-gray-500">
+            <div className="py-4 px-4 text-center text-gray-700">
               <p>No recipes found for &quot;{query}&quot;</p>
-              <p className="text-sm mt-1">Try a different search term</p>
+              <p className="text-sm mt-1 text-gray-600">Try a different search term</p>
             </div>
           ) : null}
         </div>

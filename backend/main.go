@@ -55,7 +55,7 @@ func main() {
 	}).Methods("GET")
 	
 	// Recipe search endpoint - accepts ingredients and returns recipes (different path)
-	r.HandleFunc("/api/recipes", recipeHandler.GetRecipesByIngredients).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/recipes", recipeHandler.GetRecipesByIngredients).Methods("GET", "POST", "OPTIONS")
 
 	// Setup CORS
 	allowedOrigins := []string{"http://localhost:3000", "http://localhost:3001"} // Default origins

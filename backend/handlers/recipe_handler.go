@@ -56,7 +56,7 @@ type Recipe struct {
 	MatchCount  int      `json:"matchCount"`
 }
 
-// GetRecipesByIngredients handles POST /api/recipes
+// GetRecipesByIngredients handles GET and POST /api/recipes
 func (h *RecipeHandler) GetRecipesByIngredients(w http.ResponseWriter, r *http.Request) {
 	// Handle OPTIONS request for CORS
 	if r.Method == "OPTIONS" {
@@ -64,19 +64,34 @@ func (h *RecipeHandler) GetRecipesByIngredients(w http.ResponseWriter, r *http.R
 		return
 	}
 	
-	if r.Method != http.MethodPost {
+	var ingredients []string
+	
+	if r.Method == http.MethodGet {
+		// Handle GET request with query parameters
+		ingredientsParam := r.URL.Query().Get("ingredients")
+		if ingredientsParam != "" {
+			// Split comma-separated ingredients
+			ingredients = strings.Split(ingredientsParam, ",")
+			// Trim whitespace from each ingredient
+			for i, ingredient := range ingredients {
+				ingredients[i] = strings.TrimSpace(ingredient)
+			}
+		}
+	} else if r.Method == http.MethodPost {
+		// Handle POST request with JSON body
+		var req RecipeSearchRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		ingredients = req.Ingredients
+	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req RecipeSearchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
 	// Use Spoonacular service to get recipes
-	recipes, err := h.spoonacularService.SearchRecipesByIngredients(req.Ingredients)
+	recipes, err := h.spoonacularService.SearchRecipesByIngredients(ingredients)
 	if err != nil {
 		// Log the error but don't expose internal details to client
 		http.Error(w, "Failed to fetch recipes", http.StatusInternalServerError)
@@ -84,9 +99,9 @@ func (h *RecipeHandler) GetRecipesByIngredients(w http.ResponseWriter, r *http.R
 	}
 
 	// If user provided ingredients, recalculate match counts for better accuracy
-	if len(req.Ingredients) > 0 {
+	if len(ingredients) > 0 {
 		for i := range recipes {
-			recipes[i].MatchCount = h.spoonacularService.CalculateMatchCount(req.Ingredients, recipes[i].Ingredients)
+			recipes[i].MatchCount = h.spoonacularService.CalculateMatchCount(ingredients, recipes[i].Ingredients)
 		}
 	}
 
@@ -94,7 +109,7 @@ func (h *RecipeHandler) GetRecipesByIngredients(w http.ResponseWriter, r *http.R
 	response := map[string]interface{}{
 		"recipes":     recipes,
 		"total":       len(recipes),
-		"ingredients": req.Ingredients,
+		"ingredients": ingredients,
 	}
 	
 	json.NewEncoder(w).Encode(response)
@@ -207,7 +222,7 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 		// Check if title contains the search query (case insensitive)
 		if containsIgnoreCase(recipe.Title, query) {
 			// Convert services.Recipe to handlers.Recipe
-			filteredRecipes = append(filteredRecipes, Recipe{
+			convertedRecipe := Recipe{
 				ID:          recipe.ID,
 				Title:       recipe.Title,
 				Description: recipe.Description,
@@ -217,7 +232,8 @@ func (h *RecipeHandler) SearchRecipes(w http.ResponseWriter, r *http.Request) {
 				Servings:    recipe.Servings,
 				ImageURL:    recipe.ImageURL,
 				MatchCount:  recipe.MatchCount,
-			})
+			}
+			filteredRecipes = append(filteredRecipes, convertedRecipe)
 		}
 	}
 
